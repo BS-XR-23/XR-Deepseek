@@ -1,2 +1,5 @@
 gunicorn
 waitress
+Flask
+flask_cors
+requests

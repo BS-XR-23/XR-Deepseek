@@ -139,6 +139,7 @@ sendButton.onclick = async () => {
         }
 
     }
+    chatHistory.slice(-100);
     localStorage.setItem("conversationHistory", JSON.stringify(conversationHistory));
 
 };
