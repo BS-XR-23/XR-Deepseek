@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XR23 - Deepseek</title>
+    <link rel="icon" type="image/x-icon" href="images/site-logo.png">
+    <!-- FontAwesome 6 Free -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Prism.js for syntax highlighting -->
+
+
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #212121;
+            color: #e0e0e0;
+            font-size: 18px;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+        }
+        pre
+        {
+            position: relative;
+        }
+        code {
+            /* width: 100% !important; */
+            box-sizing: border-box;
+            min-width: 100%;
+            border-radius: 7px;
+            position: relative !important;
+            padding-top: 30px !important;
+        }
+
+        .copy-icon::before {
+            content: "\f0c5";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            margin-left: auto;
+            font-size: 18px;
+            text-align: right;
+            right: 10px;
+            top: 5px;
+            position: absolute;
+            cursor: pointer;
+        }
+
+        .copied-icon::before {
+            content: "\f00c";
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+            margin-left: auto;
+            font-size: 18px;
+            text-align: right;
+            right: 10px;
+            top: 5px;
+            color: #4caf50;
+            position: absolute;
+        }
+
+        .hljs {
+            background: #0c0c0c !important;
+        }
+
+        /* code[class*=language-], pre[class*=language-] {
+            color: #ffffff;
+            background: rgb(13 13 13 /1);
+            text-shadow: none;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: .9em;
+            text-align: left;
+            white-space: pre;
+            word-spacing: normal;
+            word-break: normal;
+            word-wrap: normal;
+            line-height: 1.5;
+            -moz-tab-size: 4;
+            -o-tab-size: 4;
+            tab-size: 4;
+            -webkit-hyphens: none;
+            -moz-hyphens: none;
+            -ms-hyphens: none;
+            hyphens: none;
+        } */
+        #sidebar {
+
+            width: 240px;
+            background-color: #1e1e1e;
+            padding: 10px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        * {
+            scrollbar-color: #424242 transparent;
+        }
+
+        #chat-container,
+        #input-container {
+            width: 100%;
+            max-width: 850px;
+
+
+        }
+
+        #chat-container {
+            margin: 0 auto;
+            align-self: center;
+            display: flex;
+            flex-direction: column;
+
+        }
+
+        #chat {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #chat>div {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+
+            font-size: 17px;
+            line-height: 25px;
+            display: flex;
+            align-items: center;
+        }
+
+        #chat .user {
+            display: flex;
+            background-color: #2e2e2e;
+            align-self: flex-end;
+            max-width: 80%;
+            border-radius: 50px;
+            padding: 10px 15px;
+            justify-content: flex-end;
+        }
+
+        #chat .agent {
+            display: flex;
+            background-color: none;
+            align-self: flex-start;
+            justify-content: flex-start;
+            max-width: 100%;
+            min-width: 100%;
+        }
+
+        .bot-icon {
+            margin-right: 10px;
+            margin-top: 18px;
+            font-size: 20px;
+            align-self: start;
+            height: 30px;
+        }
+
+        .user-icon {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+
+        .user-icon {
+            color: #4caf50;
+        }
+
+        .bot-icon {
+            color: #2196f3;
+        }
+
+        #input-container {
+            position: fixed;
+            display: flex;
+            padding: 10px;
+            min-height: 100px;
+            border: 1px solid #333;
+            border-radius: 20px;
+            background-color: #2e2e2e;
+            margin-bottom: 30px;
+
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: none;
+            color: #e0e0e0;
+            height: 100%;
+            outline: none;
+            margin-right: 50px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        #state-idle,
+        #state-send,
+        #state-writing {
+            background: none;
+            border: none;
+            cursor: pointer;
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+
+        }
+
+
+
+        .response-style {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: calc(100% - 50px);
+        }
+
+        /* Media query for mobile devices */
+        @media (max-width: 600px) {
+            #sidebar {
+                display: none;
+            }
+
+            #input-container {
+                padding: 0px;
+                width: 95%;
+                margin-bottom: 10px;
+                margin-left: 10px;
+                margin-right: 10px;
+                /* Reduced bottom margin */
+            }
+        }
+
+        .loader,
+        .loader:before,
+        .loader:after {
+            border-radius: 50%;
+            width: 2.5em;
+            height: 2.5em;
+            animation-fill-mode: both;
+            animation: bblFadInOut 1s infinite ease-in-out;
+        }
+
+        .loader {
+            color: #959595;
+            font-size: 2.5px;
+            margin-top: 10px;
+            margin-left: 10px;
+            position: relative;
+            text-indent: -9999em;
+            transform: translateZ(0);
+            animation-delay: -0.16s;
+        }
+
+        .loader:before,
+        .loader:after {
+            content: '';
+            position: absolute;
+            top: 0;
+        }
+
+        .loader:before {
+            left: -3.5em;
+            animation-delay: -0.32s;
+        }
+
+        .loader:after {
+            left: 3.5em;
+        }
+
+        @keyframes bblFadInOut {
+
+            0%,
+            80%,
+            100% {
+                box-shadow: 0 2.5em 0 -1.3em
+            }
+
+            40% {
+                box-shadow: 0 2.5em 0 0
+            }
+        }
+
+        .active {
+            background: #5a5a5a !important;
+        }
+
+        .deactive {
+            background: #353535;
+        }
+        .conversation-list-item:hover{
+            background: #5a5a5a;
+        }
+        .conversation-list-item-name{
+            cursor: text;
+            font-size: .9em;
+            overflow: hidden;
+            text-overflow: clip;
+            white-space: nowrap;
+            width: 80%;
+            display: block;
+            background: none;
+            outline: 1px solid white;
+            padding: 4px 0px 4px 5px;
+            border-radius: 4px;
+            border: none;
+            color: white
+        }
+
+        /* Optional: Style when icon is clicked (for solid icon) */
+        input.conversation-list-item-name[readonly] {
+            cursor: pointer;
+            font-size: .9em;
+            overflow: hidden;
+            text-overflow: clip;
+            white-space: nowrap;
+            width: 80%;
+            display: block;
+            background: none;
+            outline: none;
+            padding: 4px 0px 4px 5px;
+            border-radius: 4px;
+            border: none;
+            color: white;
+        }
+
+       
+    </style>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/night-owl.min.css"> -->
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/monokai-sublime.min.css"> -->
+
+
+
+</head>
+
+<body>
+    <div id="sidebar">
+        <div style="display: flex;align-items: center;justify-content: space-between;">
+            <h3>Chat History</h3>
+            <i class="fa-solid fa-plus new-conversation" style="cursor: pointer;"></i>
+        </div>
+        <div id="conversation-list" style="display: flex;flex-direction: column;gap: 10px;overflow-x: hidden;">
+
+        </div>
+
+    </div>
+    <div style="width: 100%;height: 100vh;display: flex;align-items: center;flex-direction: column;">
+        <div id="message-box" style="overflow-y: scroll;align-self: stretch;flex: 1;">
+            <div id="chat-container">
+                <div id="chat" style="display: flex;flex-direction: column;gap: 10px;overflow-x: hidden;">
+                </div>
+            </div>
+        </div>
+        <div id="input-container" style="position: relative;">
+            <textarea type="text" id="userInput" placeholder="Type your message..."></textarea>
+            <button id="state-idle" style="display: block;">
+                <div
+                    style="background: white;border-radius: 50%;width: 32px;height: 32px;display: flex;align-items: center;justify-content: center;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M9.5 4C8.67157 4 8 4.67157 8 5.5V18.5C8 19.3284 8.67157 20 9.5 20C10.3284 20 11 19.3284 11 18.5V5.5C11 4.67157 10.3284 4 9.5 4Z"
+                            fill="currentColor"></path>
+                        <path
+                            d="M13 8.5C13 7.67157 13.6716 7 14.5 7C15.3284 7 16 7.67157 16 8.5V15.5C16 16.3284 15.3284 17 14.5 17C13.6716 17 13 16.3284 13 15.5V8.5Z"
+                            fill="currentColor"></path>
+                        <path
+                            d="M4.5 9C3.67157 9 3 9.67157 3 10.5V13.5C3 14.3284 3.67157 15 4.5 15C5.32843 15 6 14.3284 6 13.5V10.5C6 9.67157 5.32843 9 4.5 9Z"
+                            fill="currentColor"></path>
+                        <path
+                            d="M19.5 9C18.6716 9 18 9.67157 18 10.5V13.5C18 14.3284 18.6716 15 19.5 15C20.3284 15 21 14.3284 21 13.5V10.5C21 9.67157 20.3284 9 19.5 9Z"
+                            fill="currentColor"></path>
+                    </svg>
+
+                </div>
+            </button>
+            <button id="state-send" style="display: none;">
+                <div>
+                    <svg style="background: white;border-radius: 50%;" width="32" height="32" viewBox="0 0 32 32"
+                        fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-2xl">
+                        <path fill-rule="evenodd" clip-rule="evenodd"
+                            d="M15.1918 8.90615C15.6381 8.45983 16.3618 8.45983 16.8081 8.90615L21.9509 14.049C22.3972 14.4953 22.3972 15.2189 21.9509 15.6652C21.5046 16.1116 20.781 16.1116 20.3347 15.6652L17.1428 12.4734V22.2857C17.1428 22.9169 16.6311 23.4286 15.9999 23.4286C15.3688 23.4286 14.8571 22.9169 14.8571 22.2857V12.4734L11.6652 15.6652C11.2189 16.1116 10.4953 16.1116 10.049 15.6652C9.60265 15.2189 9.60265 14.4953 10.049 14.049L15.1918 8.90615Z"
+                            fill="currentColor"></path>
+                    </svg>
+                </div>
+            </button>
+            <button id="state-writing" style="display: none;">
+                <div
+                    style="background: white;border-radius: 50%;width: 32px;height: 32px;display: flex;align-items: center;justify-content: center;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"
+                        class="icon-lg">
+                        <rect x="7" y="7" width="10" height="10" rx="1.25" fill="currentColor"></rect>
+                    </svg>
+                </div>
+            </button>
+        </div>
+
+    </div>
+    <div id="action-menu"
+        style="position: absolute;top: 0;border-radius: 4px;;display: none;flex-direction: column;background: #3b3b3b;font-size: .9em;">
+        <div id="rename"
+            style="border-bottom: 1px solid #5c5c5c;padding:10px 15px;display: flex;align-items: center;cursor: pointer;">
+            <i class="fa-solid fa-pen-to-square" style="margin-right: 5px;"></i>Rename</div>
+        <div id="delete" style="display: flex;align-items: center;cursor: pointer;padding:10px 15px;"><i
+                class="fa-solid fa-trash-can" style="margin-right: 5px;"></i>Delete</div>
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/clipboard/prism-clipboard.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs/plugins/autoloader/prism-autoloader.min.js"></script> -->
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/go.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    <script>
+        var targetedConversation;
+        var targetInputField;
+        var currentConversation;
+        var conversationId=0;
+        var messageCount = 0;
+        var maxHistoryLength=20;
+        var chatHistory;
+        var conversationHistory = JSON.parse(localStorage.getItem("conversationHistory")) || [];
+        clearConversation();
+        conversationId=conversationHistory.length>0?conversationHistory[0].id:1;
+
+        conversationHistory.forEach(chat => {
+            AddConversationItem({id:chat.id,name:chat.name,chatHistory:chat.chatHistory});
+        });
+
+        chatHistory=[{ role: "system", content: "You are an AI code assistant." }]
+        
+      
+        $(".new-conversation").on("click", function () {
+            chatHistory=[{ role: "system", content: "You are an AI code assistant." }]
+            conversationId=conversationId+1
+            currentConversation={id:conversationId,name:`New conversation-${conversationId}`,chatHistory:chatHistory}
+            AddConversationItem(currentConversation,"first");
+        });
+       
+        function showActionMenu(e) {
+            if ($("#action-menu").css("display") === "flex") {
+                $("#action-menu").css("display", "none");
+                return;
+            }
+            $("#action-menu").css("display", "flex");
+            targetedConversation = $(e).closest('.conversation-list-item');
+          
+
+            $("#action-menu").offset({
+                top: $(e).offset().top + $("#action-menu").height() - 55,
+                left: $(e).offset().left
+            });
+        }
+        $("#rename").on("click", function (e) {
+            e.stopPropagation();
+
+            targetInputField = targetedConversation.find('.conversation-list-item-name');
+          
+            targetInputField.on('keypress', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    targetInputField.attr('readonly', true);
+                    SaveConversationName(targetInputField)
+                }
+            });
+            targetInputField.removeAttr('readonly');
+            const len = targetInputField.val().length;
+            targetInputField.focus();
+            targetInputField[0].setSelectionRange(len, len);
+            $("#action-menu").css("display", "none");
+           
+           
+        })
+        $("#delete").on("click", function () {
+            console.log(targetedConversation);
+            
+            $("#action-menu").css("display", "none");
+            const id = targetedConversation.attr('conversation-id');
+            const index = conversationHistory.findIndex((chat) => chat.id == id);
+            if(index>=0)
+            {
+                conversationHistory.splice(index, 1);
+                localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory));
+            }
+            targetedConversation.remove();
+        });
+        $(document).on("click", function (event) {
+            if (!$(event.target).closest("#action-menu").length && !$(event.target).closest(".update-option").length) {
+                $("#action-menu").css("display", "none");
+            }
+            if (targetInputField && !$(event.target).closest(targetInputField).length && !targetInputField.attr('readonly')) {
+                targetInputField.attr('readonly', true);
+            }
+        });
+        function SaveConversationName(targetInputField)
+        {
+            const newName = targetInputField.val();
+            const id = targetedConversation.attr('conversation-id');
+            console.log(id);
+            const index = conversationHistory.findIndex((chat) => chat.id == id);
+            if(index>=0) 
+            {
+                conversationHistory[index].name = newName;
+                conversationHistory=conversationHistory.filter((chat) => chat.chatHistory.length>1);
+                localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory));
+            }
+            else
+            {
+                currentConversation.name = newName;
+            }
+            
+        }
+        function AddConversationItem(conversation,position="last") {
+            let item=`<div onclick="ShowConversation(this)" id="conversation-${conversation.id}" conversation-id="${conversation.id}" class="conversation-list-item deactive" style="display: flex;align-items: center;justify-content: space-between;padding: 9px 15px;border-radius:7px;">
+                    <input readonly class="conversation-list-item-name" style="font-size: .85em;" value="${conversation.name}">
+                    <div style="display: flex;align-items: center;">
+                        <i class="fa-solid fa-ellipsis update-option" onclick="showActionMenu(this)" style="cursor: pointer;"></i>
+                    </div>
+                </div>`
+            if(position=="last") $("#conversation-list").append(item)
+            else
+            {
+                $("#conversation-list").prepend(item)
+                $("#conversation-list").children().first().click();
+            } 
+
+        }
+        function clearConversation()
+        {
+            conversationHistory=conversationHistory.filter((chat) => chat.chatHistory.length>1);
+            conversationHistory= conversationHistory.sort((a, b) => b.id - a.id);
+            conversationHistory=conversationHistory.slice(0,maxHistoryLength);
+            // localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory));
+        }
+        function ShowConversation(e)
+        {
+            $(chat).empty();
+            $(".conversation-list-item").removeClass("active");
+            $(".conversation-list-item").addClass("deactive");
+            $(e).addClass("active");
+
+            const id = $(e).attr('conversation-id');
+
+            const index = conversationHistory.findIndex((chat) => chat.id == id);
+            if(index>=0){
+                currentConversation=conversationHistory[index];
+                console.log(conversationHistory[index]);
+                chatHistory=currentConversation.chatHistory;
+            } 
+            else
+            {
+                chatHistory=[{ role: "system", content: "You are an AI code assistant." }]
+                currentConversation={id:conversationId,name:`New conversation-${conversationId}`,chatHistory:chatHistory}
+            }
+           
+            chatHistory.forEach(message => {
+                AddMessage(message);
+            });
+           
+        }
+    </script>
+    <script>
+        const chat = document.getElementById('chat');
+        const userInput = document.getElementById('userInput');
+        const sendButton = document.getElementById('state-send');
+        const messageBox = document.getElementById('message-box');
+        let isUserScrolling = false;
+        let lastScrollTop = 0;
+        let responseStreamReader;
+        hljs.configure({ debug: false });
+        userInput.addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                if (event.shiftKey) {
+                    // Allow new line in textarea
+                    return;
+                }
+                event.preventDefault(); // Prevent newline in textarea
+                sendButton.click();
+            }
+        });
+
+
+        $('#state-writing').click(function () {
+            $(this).hide();
+            $('#state-idle').show();
+            $('#state-send').hide();
+            responseStreamReader.cancel();
+
+        });
+        $('#state-send').click(function () {
+            $(this).hide();
+            $('#state-writing').show();
+            $('#state-idle').hide();
+        });
+
+        $('.copy-icon').on('click', function () {
+            var codeText = $(this).parent("code").text();
+            // Create a temporary textarea to copy the text
+            var $temp = $('<textarea>');
+            $('body').append($temp);
+            $temp.val(codeText).select();
+            document.execCommand('copy');
+            $temp.remove();
+            console.log("Copied to clipboard!");
+
+
+        });
+        $("#userInput").on("input", function () {
+
+            if ($("#userInput").val().trim() !== '') {
+                $('#state-writing').hide();
+                $('#state-idle').hide();
+                $('#state-send').show();
+            }
+            else {
+                $('#state-writing').hide();
+                $('#state-idle').show();
+                $('#state-send').hide();
+            }
+            $(this).height('auto'); // Reset height to recalculate
+            $(this).height(this.scrollHeight); // Set new height based on scroll height
+
+        });
+        sendButton.onclick = async () => {
+            const message = userInput.value;
+            if (message.trim() === '') return;
+            isUserScrolling = false;
+            chatHistory.push({ role: "user", content: message });
+            const userElement = document.createElement('div');
+            $(chat).append(`<div class="user">${message}</div>`);
+            messageBox.scrollTop = messageBox.scrollHeight;
+            userInput.value = '';
+
+            var agentLoading = $(`<div class="agent">
+                            <img src="images/deepseek.png" class="fas fa-robot bot-icon">
+                            <span class="loader"></span>
+                        </div>`);
+            $(chat).append(agentLoading);
+
+            // Call the existing API to get a response
+            const response = await fetch('http://172.18.102.223:5000/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model: 'deepseek-coder:6.7b', messages: chatHistory })
+            });
+            agentLoading.remove();
+
+            responseStreamReader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+            let botReply = '';
+            var agentElement = $(`<div class="agent"></div>`);
+            $(chat).append(agentElement)
+            while (true) {
+                const { done, value } = await responseStreamReader.read();
+                if (done) break;
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split("\n").filter(line => line.trim() !== "");
+                for (const line of lines) {
+                    try {
+
+                        const parsedLine = JSON.parse(line);
+                        console.log(parsedLine);
+                        botReply += parsedLine.message.content;
+
+                        // Convert Markdown to HTML
+                        let formattedResponse = marked.parse(botReply);
+
+                        // Update chat UI with formatted response
+                        $(agentElement).html(`<img src="images/deepseek.png" class="fas fa-robot bot-icon" ><div class="response-style" >${formattedResponse}</div>`);
+
+                        HighlightCode(agentElement)
+
+                        if (!isUserScrolling) messageBox.scrollTop = messageBox.scrollHeight;
+
+                        await new Promise(resolve => setTimeout(resolve, 30)); // Smooth streaming effect
+                    } catch (e) {
+                        console.error("Error parsing line:", line, e);
+                    }
+                }
+
+            }
+            $('#state-writing').click();
+            chatHistory.push({ role: "assistant", content: botReply });
+
+            if (chatHistory.length<=3) 
+            {
+                let conversationName=message.split(" ").slice(0, 6).join(" ");
+                if(currentConversation)
+                {
+                    currentConversation.name = conversationName;
+                    conversationHistory.push(currentConversation);
+                    $(`#conversation-${currentConversation.id} input`).val(conversationName);
+
+                }
+                else{
+                    conversationId=conversationId+1;
+                    currentConversation={id:conversationId,name:conversationName,chatHistory:chatHistory}
+                    conversationHistory.push(currentConversation);
+                    AddConversationItem(currentConversation,"first");
+                }
+
+            }
+            localStorage.setItem("conversationHistory", JSON.stringify(conversationHistory));
+
+        };
+
+        function HighlightCode(agentElement) {
+            $(agentElement).find('pre code').each(function () {
+              
+                if ($(this).attr('data-highlighted') === 'yes') {
+                    return;
+                }
+                hljs.highlightElement(this);
+                console.log(this);
+                // Mark as highlighted
+                $(this).attr('data-highlighted', 'yes');
+                var $pre = $(this).closest('pre')
+                if ($pre.find('.copy-icon').length === 0) {
+                    var copyIcon = $('<span class="copy-icon"></span>'); // Using <i> for the icon
+                    $pre.append(copyIcon);
+                    $(copyIcon).on('click', function () {
+                        var codeText = $(this).parent().find("code").text();
+                        $(copyIcon).addClass("copied-icon")
+                        $(copyIcon).removeClass("copy-icon")
+                        setTimeout(function () {
+                            $(copyIcon).removeClass("copied-icon");
+                            $(copyIcon).addClass("copy-icon");
+                        }, 2000);
+                        // Create a temporary textarea to copy the text
+                        var $temp = $('<textarea>');
+                        $('body').append($temp);
+                        $temp.val(codeText).select();
+                        document.execCommand('copy');
+                        $temp.remove();
+                        console.log("Copied to clipboard!",codeText);
+                    });
+                }
+            });
+        }
+        $("#message-box").on("scroll", () => {
+            const scrollHeight = messageBox.scrollHeight;
+            const scrollTop = messageBox.scrollTop;
+            const clientHeight = messageBox.clientHeight;
+            const atBottom = scrollTop + clientHeight >= scrollHeight - 10; // Close to bottom
+
+            console.log("Scroll Info:", { scrollTop, clientHeight, scrollHeight });
+
+            if (scrollTop < lastScrollTop) {
+                isUserScrolling = true; // User is scrolling up
+            } 
+            else if(atBottom)
+            {
+                isUserScrolling = false; // User is at bottom, allow auto-scroll
+            }
+
+            lastScrollTop = scrollTop; // Update last scroll position
+        });
+       
+        function AddMessage(message)
+        {
+            if (message.role === "user") {
+                $(chat).append(`<div class="user">${message.content}</div>`);
+            } else if(message.role === "assistant") {
+                let formattedResponse = marked.parse(message.content);
+
+                var agentElement = $(`<div class="agent"></div>`);
+                $(chat).append(agentElement)
+                agentElement.html(`<img src="images/deepseek.png" class="fas fa-robot bot-icon" ><div class="response-style" >${formattedResponse}</div>`);
+                HighlightCode(agentElement)
+                
+            }
+            messageBox.scrollTop = messageBox.scrollHeight;
+        }
+
+        
+    </script>
+</body>
+
+</html>
