@@ -1,4 +1,4 @@
-from flask import Flask, request, Response, stream_with_context
+from flask import Flask, request, Response, stream_with_context,render_template
 from flask_cors import CORS
 import requests
 
@@ -6,6 +6,10 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
 OLLAMA_URL = "http://127.0.0.1:11434"
+
+@app.route('/')
+def home():
+    return render_template('index.html')
 
 @app.route('/api/generate', methods=['POST'])
 def generate_response():
