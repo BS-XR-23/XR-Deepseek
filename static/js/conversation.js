@@ -59,7 +59,7 @@ $("#rename").on("click", function (e) {
 })
 $("#delete").on("click", function () {
     console.log(targetedConversation);
-    
+    $(chat).empty();
     $("#action-menu").css("display", "none");
     const id = targetedConversation.attr('conversation-id');
     const index = conversationHistory.findIndex((chat) => chat.id == id);

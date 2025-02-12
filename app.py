@@ -20,6 +20,8 @@ def generate_response():
             if line:
                 yield line + b'\n'  # Ensure proper streaming format
     
+
+    
     return Response(stream_with_context(generate()), content_type="application/json")
 
 @app.route('/api/chat', methods=['POST'])

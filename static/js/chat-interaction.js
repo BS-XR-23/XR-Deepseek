@@ -2,11 +2,16 @@ const chat = document.getElementById('chat');
 const userInput = document.getElementById('userInput');
 const sendButton = document.getElementById('state-send');
 const messageBox = document.getElementById('message-box');
+var selectedModel =localStorage.getItem('selectedModel') || "deepseek-r1:7b";
+
+console.log(selectedModel);
 let isUserScrolling = false;
 let lastScrollTop = 0;
 let responseStreamReader;
 hljs.configure({ debug: false });
-
+$(document).ready(function() {
+    $("#deepseek-mode-dropdown").val(selectedModel);
+})
 userInput.addEventListener('keypress', function (event) {
     if (event.key === 'Enter') {
         if (event.shiftKey) {
@@ -60,6 +65,10 @@ $("#userInput").on("input", function () {
     $(this).height(this.scrollHeight); // Set new height based on scroll height
 
 });
+$("#deepseek-mode-dropdown").on("input", function () {
+    localStorage.setItem('selectedModel', $(this).val());
+    selectedModel = $(this).val();
+});
 sendButton.onclick = async () => {
     const message = userInput.value;
     if (message.trim() === '') return;
@@ -71,7 +80,7 @@ sendButton.onclick = async () => {
     userInput.value = '';
 
     var agentLoading = $(`<div class="agent">
-                    <img src="images/deepseek.png" class="fas fa-robot bot-icon">
+                    <img src="/static/images/deepseek.png" class="fas fa-robot bot-icon">
                     <span class="loader"></span>
                 </div>`);
     $(chat).append(agentLoading);
@@ -80,7 +89,8 @@ sendButton.onclick = async () => {
     const response = await fetch('http://172.18.102.223:5000/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'deepseek-coder:6.7b', messages: chatHistory })
+        // body: JSON.stringify({ model: 'deepseek-coder:6.7b', messages: chatHistory })
+        body: JSON.stringify({ model: selectedModel, messages: chatHistory })
     });
     agentLoading.remove();
 
@@ -98,14 +108,13 @@ sendButton.onclick = async () => {
             try {
 
                 const parsedLine = JSON.parse(line);
-                console.log(parsedLine);
                 botReply += parsedLine.message.content;
 
                 // Convert Markdown to HTML
                 let formattedResponse = marked.parse(botReply);
 
                 // Update chat UI with formatted response
-                $(agentElement).html(`<img src="images/deepseek.png" class="fas fa-robot bot-icon" ><div class="response-style" >${formattedResponse}</div>`);
+                $(agentElement).html(`<img src="/static/images/deepseek.png" class="fas fa-robot bot-icon" ><div class="response-style" >${formattedResponse}</div>`);
 
                 HighlightCode(agentElement)
 
@@ -151,7 +160,7 @@ function HighlightCode(agentElement) {
             return;
         }
         hljs.highlightElement(this);
-        console.log(this);
+        // console.log(this);
         // Mark as highlighted
         $(this).attr('data-highlighted', 'yes');
         var $pre = $(this).closest('pre')
@@ -183,7 +192,7 @@ $("#message-box").on("scroll", () => {
     const clientHeight = messageBox.clientHeight;
     const atBottom = scrollTop + clientHeight >= scrollHeight - 10; // Close to bottom
 
-    console.log("Scroll Info:", { scrollTop, clientHeight, scrollHeight });
+    // console.log("Scroll Info:", { scrollTop, clientHeight, scrollHeight });
 
     if (scrollTop < lastScrollTop) {
         isUserScrolling = true; // User is scrolling up

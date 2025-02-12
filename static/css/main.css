@@ -180,6 +180,7 @@ code {
     font-family: 'Roboto', sans-serif;
     font-size: 16px;
     box-sizing: border-box;
+    max-height: 400px;
 }
 
 #state-idle,
@@ -311,3 +312,11 @@ input.conversation-list-item-name[readonly] {
     border: none;
     color: white;
 }
+#deepseek-mode-dropdown{
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: #252525;
+    color: white;
+    outline: none;
+    border: 1px solid #7b7b7b;
+}    
