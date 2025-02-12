@@ -77,8 +77,8 @@ sendButton.onclick = async () => {
     const userElement = document.createElement('div');
     $(chat).append(`<div class="user">${message}</div>`);
     messageBox.scrollTop = messageBox.scrollHeight;
-    userInput.value = '';
-
+    $('#userInput').val('').trigger('input');
+   
     var agentLoading = $(`<div class="agent">
                     <img src="/static/images/deepseek.png" class="fas fa-robot bot-icon">
                     <span class="loader"></span>
