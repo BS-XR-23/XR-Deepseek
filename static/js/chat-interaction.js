@@ -20,6 +20,7 @@ userInput.addEventListener('keypress', function (event) {
         }
         event.preventDefault(); // Prevent newline in textarea
         sendButton.click();
+        $('#state-send').click();
     }
 });
 
@@ -76,14 +77,16 @@ sendButton.onclick = async () => {
     chatHistory.push({ role: "user", content: message });
     const userElement = document.createElement('div');
     $(chat).append(`<div class="user">${message}</div>`);
-    messageBox.scrollTop = messageBox.scrollHeight;
-    $('#userInput').val('').trigger('input');
+   
    
     var agentLoading = $(`<div class="agent">
                     <img src="/static/images/deepseek.png" class="fas fa-robot bot-icon">
                     <span class="loader"></span>
                 </div>`);
     $(chat).append(agentLoading);
+
+    messageBox.scrollTop = messageBox.scrollHeight;
+    $('#userInput').val('').trigger('input');
 
     // Call the existing API to get a response
     const response = await fetch('http://172.18.102.223:5000/api/chat', {

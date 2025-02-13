@@ -121,7 +121,7 @@ code {
     background-color: #2e2e2e;
     align-self: flex-end;
     max-width: 80%;
-    border-radius: 50px;
+    border-radius: 1.5rem;
     padding: 10px 15px;
     justify-content: flex-end;
 }
